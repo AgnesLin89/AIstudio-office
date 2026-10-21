@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AIstudio 辦公室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: one pixel-art office canvas (8-bit, cozy) framed like an old monitor; below it the picked character, the staff list with titles and duties, and the work log */
+:root{
+  --bg:#f6ecd9; --panel:#fffaf0; --ink:#3a2a1e; --muted:#8a7461; --line:#e2cfb0;
+  --blue:#3d7be0; --blue-soft:#dce8fb; --done:#3f9a6b; --frame:#5a4030;
+  --f-pixel:'DotGothic16','Noto Sans TC',system-ui,sans-serif;
+  --f-latin:'Press Start 2P',ui-monospace,monospace;
+  --f-body:'Noto Sans TC',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1c1712; --panel:#28211a; --ink:#f3e6d2; --muted:#b39c84; --line:#3d3227;
+  --blue:#6b9ef2; --blue-soft:#22324d; --done:#62c492; --frame:#0f0b08; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1c1712; --panel:#28211a; --ink:#f3e6d2; --muted:#b39c84; --line:#3d3227;
+  --blue:#6b9ef2; --blue-soft:#22324d; --done:#62c492; --frame:#0f0b08; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14px/1.6 var(--f-body);margin:0}
+.wrap{max-width:760px;margin:0 auto;padding-block:18px 40px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:6px 14px;margin-bottom:12px}
+h1{margin:0;font:400 24px/1.2 var(--f-pixel);letter-spacing:.04em}
+h1 .en{display:block;font:400 9px var(--f-latin);color:var(--muted);margin-top:6px;letter-spacing:.08em}
+.live{font:400 12px var(--f-pixel);color:var(--muted)}
+.screen{background:var(--frame);padding:10px;border-radius:14px;box-shadow:0 6px 0 rgba(0,0,0,.15)}
+#office{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:6px;background:#2a2018;touch-action:manipulation;cursor:pointer}
+.hint{font:400 12px var(--f-pixel);color:var(--muted);margin:8px 2px 0}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:4px;background:var(--panel);border:2px solid var(--line);font:400 14px var(--f-pixel)}
+.pill b{font:400 11px var(--f-latin)}
+.sq{width:10px;height:10px;background:var(--muted)}
+.sq.working{background:var(--blue)}.sq.done{background:var(--done)}
+.card{background:var(--panel);border:2px solid var(--line);border-radius:6px;padding:12px 14px;margin-bottom:14px}
+.card h2{font:400 16px var(--f-pixel);margin:0 0 8px}
+.pick{display:flex;gap:12px;align-items:flex-start}
+#portrait{width:64px;height:64px;flex:none;background:var(--blue-soft);border-radius:6px;image-rendering:pixelated}
+.pick .info{min-width:0}
+.pick .nm{font:400 20px var(--f-pixel)}
+.pick .ti{font:400 14px var(--f-pixel);color:var(--blue)}
+.pick .rl{font:400 9px var(--f-latin);color:var(--muted);word-break:break-all;margin-top:2px}
+.pick .dt{margin-top:4px;font-size:13px;color:var(--muted)}
+.pick .tk{margin-top:6px;overflow-wrap:anywhere}
+.tag{display:inline-block;font:400 13px var(--f-pixel);padding:0 8px;border-radius:3px;background:var(--line);color:var(--ink)}
+.tag.working{background:var(--blue);color:#fff}.tag.done{background:var(--done);color:#fff}
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}
+.roster button{all:unset;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:0 8px;align-items:center;padding:7px 8px;border-radius:4px;border:2px solid transparent;min-width:0}
+.roster button:hover,.roster button:focus-visible{border-color:var(--blue)}
+.roster button[aria-pressed="true"]{background:var(--blue-soft);border-color:var(--blue)}
+.roster .e{font-size:18px;grid-row:span 2}
+.roster .n{font:400 15px var(--f-pixel);min-width:0}
+.roster .n small{font:400 12px var(--f-pixel);color:var(--blue);margin-left:6px}
+.roster .s{font:400 12px var(--f-pixel);color:var(--muted);white-space:nowrap}
+.roster .s.working{color:var(--blue)}.roster .s.done{color:var(--done)}
+.roster .d{grid-column:2 / 4;font-size:12px;color:var(--muted);line-height:1.45;min-width:0;overflow-wrap:anywhere}
+.log ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.log li{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;padding-top:6px;border-top:2px dotted var(--line);min-width:0}
+.log li:first-child{border-top:0;padding-top:0}
+.log time{font:400 12px var(--f-pixel);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.log p{margin:0;min-width:0;overflow-wrap:anywhere}
+.muted{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>AIstudio 辦公室<span class="en">YAHSUAN LIN STUDIO</span></h1>
+    <div class="live" id="live">連線中…</div>
+  </header>
+
+  <div class="screen"><canvas id="office" width="192" height="272" aria-label="像素風辦公室，九位小幫手和兩隻貓在裡面工作或休息"></canvas></div>
+  <p class="hint">點一下人物或貓咪看他在做什麼。工作中的人會坐在位子上打字；沒事的人會去茶水間、零食區、休息室或廁所。</p>
+
+  <div class="pills">
+    <span class="pill"><span class="sq working"></span>工作中 <b id="n-working">-</b></span>
+    <span class="pill"><span class="sq done"></span>剛完成 <b id="n-done">-</b></span>
+    <span class="pill"><span class="sq"></span>待命 <b id="n-idle">-</b></span>
+  </div>
+
+  <section class="card"><div class="pick">
+    <canvas id="portrait" width="16" height="16"></canvas>
+    <div class="info"><div class="nm" id="p-name">點一下人物</div><div class="ti" id="p-title"></div><div class="rl" id="p-role">TAP A CHARACTER</div>
+      <div class="dt" id="p-duty"></div>
+      <div class="tk" id="p-task"><span class="muted">他的職稱、職責和正在做的事會顯示在這裡。</span></div></div>
+  </div></section>
+
+  <section class="card"><h2>員工名冊</h2><div class="roster" id="roster"></div></section>
+  <section class="card log"><h2>工作紀錄</h2><ol id="log"><li><time>—</time><p class="muted">總監分派工作後，紀錄會出現在這裡。</p></li></ol></section>
+</div>
+
+<script>
+// ---------- roster (who sits where; live status comes from the db or status.json) ----------
+const ROSTER = [
+  {id:"project-manager",     name:"小曆", title:"專案經理",   duty:"管所有專案的截止日、拆解任務、排本週待辦", emoji:"🗓️", hair:"#3b2a20", shirt:"#7fb069", acc:"clip",    desk:[2,13]},
+  {id:"researcher",          name:"查查", title:"研究員",     duty:"查史料與事實、整理徵件簡章，每條都附來源", emoji:"🔍", hair:"#1f1f2e", shirt:"#5b8ff0", acc:"lens",    desk:[6,13]},
+  {id:"proposal-writer",     name:"筆筆", title:"提案撰稿",   duty:"寫提案大綱與全文、藝術家論述與簡介",       emoji:"✍️", hair:"#8a4b2a", shirt:"#f2c14e", acc:"pencil",  desk:[10,13]},
+  {id:"exhibition-designer", name:"築築", title:"展場設計師", duty:"規劃觀眾經驗、空間配置、設備清單與預算",   emoji:"🏗️", hair:"#2b2b2b", shirt:"#e07a5f", acc:"hat",     desk:[14,13]},
+  {id:"film-director",       name:"小導", title:"影像導演",   duty:"敘事結構、分鏡、AI 生成 prompt、後製規劃",  emoji:"🎬", hair:"#222222", shirt:"#3d405b", acc:"beret",   desk:[2,18]},
+  {id:"td-engineer",         name:"節節", title:"TD 工程師",  duty:"TouchDesigner 架構、Python、除錯與設備串接", emoji:"🔌", hair:"#6b3e26", shirt:"#81b29a", acc:"phones",  desk:[6,18]},
+  {id:"jury-reviewer",       name:"老嚴", title:"評審委員",   duty:"用徵件評審標準獨立審查提案，找出弱點",     emoji:"🧐", hair:"#a3a3a3", shirt:"#6d597a", acc:"glasses", desk:[10,18]},
+  {id:"social-strategist",   name:"啾啾", title:"社群策略師", duty:"規劃個人社群、寫貼文草稿、回顧成效",       emoji:"🐣", hair:"#b5485d", shirt:"#f4a6b7", acc:"chick",   desk:[14,18]},
+  {id:"stock-analyst",       name:"小K",  title:"投資分析師", duty:"盤前日報、個股研究、投資日誌（隔離部門）", emoji:"📈", hair:"#2e2e2e", shirt:"#f4f1ea", acc:"tie",     desk:[20,13], booth:true},
+];
+const CATS = [
+  {id:"cat-yuyu",     name:"柚柚", title:"辦公室貓咪", duty:"橘貓。負責在休息室地毯上曬太陽、陪大家發呆。", base:"#f0a24a", stripe:"#d98a35", eye:"#3a6b2a"},
+  {id:"cat-congcong", name:"蔥蔥", title:"辦公室貓咪", duty:"黑白虎斑貓。負責巡邏工作區，偶爾踩過鍵盤。",   base:"#f4f4f0", stripe:"#2a2a2a", eye:"#5a8a2a", patch:true},
+];
+const LABEL = {working:"工作中", done:"剛完成", idle:"待命"};
+const data = Object.fromEntries(ROSTER.map(r => [r.id, {status:"idle", task:""}]));
+
+// ---------- map: 24 x 34 tiles of 8px ----------
+const T = 8, GW = 24, GH = 34, W = GW*T, H = GH*T;
+const solid = Array.from({length:GH}, () => new Array(GW).fill(false));
+const block = (tx,ty,w=1,h=1) => { for(let y=ty;y<ty+h;y++) for(let x=tx;x<tx+w;x++) if(solid[y]) solid[y][x]=true; };
+const isWallTile = (x,y) => y===0||y===GH-1||x===0||x===GW-1
+  || ((y===10||y===23)&&x>0&&x<GW-1&&![5,6,17,18].includes(x))
+  || (x===11&&((y>0&&y<10)||(y>23&&y<33)))
+  || (y===26&&x>=19&&x<=22) || (x===19&&y>=26&&y<=32&&y!==29);   // restroom
+for (let y=0;y<GH;y++) for (let x=0;x<GW;x++) if (isWallTile(x,y)) block(x,y);
+for (let y=11;y<=22;y++) if (y!==16) block(18,y);                 // glass booth, door at y=16
+// furniture
+block(3,1,6,1); block(3,4,6,3);                                    // whiteboard, meeting table
+block(12,1,8,1); block(21,1,2,2); block(15,5,2,2);                 // counter, fridge, pantry table
+block(1,24,2,2); block(7,24,3,1); block(4,28,3,2);                 // vending, snack shelf (clear of the door at x5-6), snack table
+block(13,31,6,2); block(14,24,4,1); block(14,27,4,1); block(20,24);// sofa, tv stand, coffee table, bean bag
+block(22,28); block(22,31);                                        // toilet, sink
+block(1,12);                                                       // water cooler
+ROSTER.forEach(r => block(r.desk[0], r.desk[1], r.booth?2:3, 2));
+block(20,20,2,1);                                                  // booth mini sofa
+const PLANTS = [
+  {t:[1,1],k:"snake"},{t:[10,1],k:"monstera"},{t:[20,1],k:"flower"},{t:[1,21],k:"palm"},
+  {t:[22,12],k:"snake"},{t:[10,24],k:"cactus"},{t:[10,32],k:"flower"},{t:[22,24],k:"palm"},
+  {t:[12,24],k:"monstera"},{t:[12,32],k:"snake"},{t:[20,32],k:"succulent"},{t:[1,32],k:"cactus"},
+];
+PLANTS.forEach(p=>block(...p.t));
+
+const seatOf = r => [r.desk[0]+1, r.desk[1]+2];
+const SPOTS = [
+  {t:[4,3],a:"meet"},{t:[7,3],a:"meet"},{t:[4,7],a:"meet"},{t:[7,7],a:"meet"},{t:[9,5],a:"meet"},
+  {t:[13,2],a:"coffee"},{t:[17,2],a:"coffee"},{t:[21,3],a:"fridge"},{t:[15,7],a:"sit"},{t:[14,5],a:"sit"},{t:[17,6],a:"sit"},
+  {t:[2,26],a:"snack"},{t:[8,25],a:"snack"},{t:[3,28],a:"snack"},{t:[7,29],a:"snack"},{t:[5,30],a:"snack"},
+  {t:[14,30],a:"sleep"},{t:[16,30],a:"tv"},{t:[18,30],a:"tv"},{t:[20,25],a:"sleep"},{t:[13,28],a:"tv"},
+  {t:[21,28],a:"toilet"},{t:[21,31],a:"wash"},
+  {t:[2,11],a:"water"},{t:[8,21],a:"stand"},
+];
+const BOOTH_SPOTS = [{t:[20,19],a:"sit"},{t:[21,19],a:"sleep"},{t:[22,17],a:"stand"}];
+const CAT_SPOTS = [[13,29],[15,29],[17,29],[16,26],[19,7],[8,31],[12,16],[4,21],[2,8],[9,16],[13,21]];
+
+function bfs(from, to){
+  const key = (x,y)=>y*GW+x, prev = new Map([[key(...from), null]]), q=[from];
+  while(q.length){ const [x,y]=q.shift(); if(x===to[0]&&y===to[1]) break;
+    for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+dx, ny=y+dy;
+      if(nx<0||ny<0||nx>=GW||ny>=GH||solid[ny][nx]||prev.has(key(nx,ny))) continue;
+      prev.set(key(nx,ny),[x,y]); q.push([nx,ny]); } }
+  if(!prev.has(key(...to))) return [];
+  const path=[]; let c=to; while(c){ path.unshift(c); c=prev.get(key(...c)); } return path.slice(1);
+}
+
+// ---------- drawing helpers ----------
+const cv = document.getElementById("office"), out = cv.getContext("2d");
+const bg = document.createElement("canvas"); bg.width=W; bg.height=H; const b = bg.getContext("2d");
+const scene = document.createElement("canvas"); scene.width=W; scene.height=H; const g = scene.getContext("2d");
+const R = (c,x,y,w,h,col) => { c.fillStyle=col; c.fillRect(x,y,w,h); };
+
+function plant(c, tx, ty, k){
+  const x=tx*T, y=ty*T, pot=(col="#b0623e")=>{ R(c,x+2,y+5,4,3,col); R(c,x+1,y+5,6,1,col); };
+  switch(k){
+    case "snake": pot("#e6d3b3"); for(const [i,h] of [[2,7],[3,9],[4,8],[5,6]]){ R(c,x+i,y+5-h,1,h,"#3f7d4a"); R(c,x+i,y+5-h+2,1,1,"#9bc28a"); } break;
+    case "monstera": pot("#5a6b7a"); R(c,x,y-1,8,6,"#2f7a43"); R(c,x+1,y-3,3,3,"#3f9a55"); R(c,x+4,y-2,4,3,"#3f9a55"); R(c,x+2,y+1,1,2,"#1f5a30"); R(c,x+5,y,1,2,"#1f5a30"); R(c,x+3,y-2,1,1,"#1f5a30"); break;
+    case "palm": pot(); R(c,x+3,y-2,2,7,"#8a5a3b"); R(c,x-1,y-5,10,2,"#4f9a5a"); R(c,x+1,y-7,6,2,"#62b56d"); R(c,x-1,y-3,2,2,"#4f9a5a"); R(c,x+7,y-3,2,2,"#4f9a5a"); break;
+    case "cactus": pot("#c96f4a"); R(c,x+3,y-2,2,7,"#5aa25a"); R(c,x+1,y,2,1,"#5aa25a"); R(c,x+1,y-2,1,2,"#5aa25a"); R(c,x+5,y+1,2,1,"#5aa25a"); R(c,x+6,y-1,1,2,"#5aa25a"); R(c,x+3,y-3,2,1,"#f4a3c0"); break;
+    case "flower": R(c,x+2,y+3,4,5,"#9fc3d8"); R(c,x+2,y+3,4,1,"#cfe3ee"); R(c,x+3,y-1,1,4,"#4f9a5a"); R(c,x+5,y,1,3,"#4f9a5a");
+      R(c,x+2,y-3,3,3,"#e0577a"); R(c,x+3,y-2,1,1,"#f7d24a"); R(c,x+5,y-2,3,3,"#f2c14e"); R(c,x+6,y-1,1,1,"#e07a5f"); break;
+    case "succulent": pot("#e6d3b3"); R(c,x+1,y+2,6,3,"#7fb8a0"); R(c,x+2,y+1,4,2,"#9fd0b8"); R(c,x+3,y,2,1,"#c2e5d2"); break;
+  }
+}
+function hangingPlant(c, x, y){ R(c,x,y,4,3,"#b0623e"); R(c,x-1,y+3,6,2,"#4f9a5a"); R(c,x-1,y+5,1,4,"#4f9a5a"); R(c,x+2,y+5,1,6,"#62b56d"); R(c,x+4,y+5,1,3,"#4f9a5a"); }
+
+function drawBackground(){
+  for (let y=0;y<H;y+=4){ R(b,0,y,W,4,(y/4)%2?"#d9a066":"#cf9459");
+    for (let x=((y/4)%2)*8; x<W; x+=16) R(b,x,y,1,4,"#b87a45"); }
+  const area=(tx,ty,w,h,fn)=>{ for(let y=ty*T;y<(ty+h)*T;y+=T) for(let x=tx*T;x<(tx+w)*T;x+=T) fn(x,y); };
+  area(1,1,10,9,(x,y)=>{R(b,x,y,T,T,"#8fa3bf"); R(b,x+3,y+3,1,1,"#7d92b0");});
+  area(12,1,11,9,(x,y)=>R(b,x,y,T,T,((x+y)/T)%2?"#f6efe0":"#e6d9bf"));
+  area(1,24,10,9,(x,y)=>R(b,x,y,T,T,((x+y)/T)%2?"#f7d9a8":"#efc78c"));
+  area(12,24,11,9,(x,y)=>{R(b,x,y,T,T,"#a8c69f"); R(b,x+5,y+5,1,1,"#97b78e");});
+  R(b,13*T,26*T-4,6*T,5*T,"#d99a8a"); R(b,13*T+2,26*T-2,6*T-4,5*T-4,"#efc0b0");
+  area(20,27,3,6,(x,y)=>R(b,x,y,T,T,((x+y)/T)%2?"#e8f3fa":"#cfe4f1"));                        // restroom tiles
+  area(19,11,4,12,(x,y)=>R(b,x,y,T,T,((x+y)/T)%2?"#d6e6f2":"#c8dbea"));
+  for (let y=0;y<GH;y++) for (let x=0;x<GW;x++) if (isWallTile(x,y)){
+    R(b,x*T,y*T,T,T,"#f1dfba"); R(b,x*T,y*T,T,3,"#8b6a4e"); R(b,x*T,y*T+7,T,1,"#c9a97f"); }
+  for (let y=11;y<=22;y++) if(y!==16){ R(b,18*T,y*T,T,T,"rgba(170,215,240,.75)"); R(b,18*T+2,y*T,1,T,"#ffffff"); R(b,18*T,y*T,T,1,"#8fbcd6"); }
+  [[5,10],[17,10],[5,23],[17,23]].forEach(([x,y])=>{ R(b,x*T,y*T+2,2*T,4,"#a5553f"); R(b,x*T+2,y*T+3,2*T-4,2,"#c56f55"); });
+  R(b,19*T+2,29*T+1,4,6,"#c56f55");                                                            // restroom door mat
+  // restroom sign on wall
+  R(b,19*T+1,27*T+1,6,6,"#ffffff"); R(b,19*T+2,27*T+2,1,1,"#3d7be0"); R(b,19*T+2,27*T+3,1,3,"#3d7be0"); R(b,19*T+5,27*T+2,1,1,"#e0577a"); R(b,19*T+4,27*T+3,3,3,"#e0577a");
+  // meeting room
+  R(b,3*T,1*T,6*T,6,"#ffffff"); R(b,3*T,1*T+6,6*T,2,"#9aa3ad");
+  R(b,3*T+4,1*T+2,10,1,"#3d7be0"); R(b,3*T+16,1*T+3,8,1,"#e07a5f"); R(b,3*T+28,1*T+2,12,1,"#3f9a6b");
+  R(b,3*T,4*T,6*T,3*T,"#8a5a3b"); R(b,3*T+1,4*T+1,6*T-2,3*T-3,"#a66d47");
+  [[4,4],[7,4]].forEach(([x,y])=>{ R(b,x*T+1,y*T+6,6,4,"#ffffff"); R(b,x*T+2,y*T+7,4,2,"#cfd6df"); });
+  R(b,5*T+4,5*T+2,6,5,"#f3f3f3"); R(b,5*T+5,5*T+3,4,1,"#3d7be0");
+  // pantry
+  R(b,12*T,1*T,8*T,T,"#c7c0b4"); R(b,12*T,1*T,8*T,2,"#e9e4da");
+  R(b,13*T,1*T-3,6,10,"#3a3a3a"); R(b,13*T+1,1*T+3,4,2,"#6b4a2e");
+  R(b,16*T,1*T+2,8,4,"#9fc3d8"); R(b,16*T+3,1*T-1,2,3,"#9aa3ad");
+  R(b,18*T,1*T,5,5,"#e07a5f"); R(b,18*T+5,1*T+1,2,2,"#e07a5f");
+  [12,15,19].forEach((x,i)=>R(b,x*T+2,1*T+2,3,4,["#f2c14e","#7fb069","#5b8ff0"][i]));
+  R(b,21*T,1*T-2,2*T,2*T+2,"#f4f6f8"); R(b,21*T,1*T+6,2*T,1,"#c9d1d9"); R(b,21*T+2,1*T+1,1,4,"#9aa3ad");
+  R(b,15*T,5*T,2*T,2*T,"#d9b38c"); R(b,15*T+1,5*T+1,2*T-2,2*T-2,"#ecc9a0"); R(b,15*T+5,5*T+5,3,3,"#ffffff");
+  // snack zone
+  R(b,1*T,24*T-2,2*T,2*T+2,"#3d7be0"); R(b,1*T+2,24*T+1,9,10,"#dce8fb");
+  for (let i=0;i<3;i++) for (let j=0;j<3;j++) R(b,1*T+3+j*3,24*T+2+i*3,2,2,["#e07a5f","#f2c14e","#7fb069"][(i+j)%3]);
+  R(b,1*T+12,24*T+4,2,4,"#f4f6f8");
+  R(b,7*T,24*T-2,3*T,T+2,"#8a5a3b");
+  for (let i=0;i<5;i++) R(b,7*T+2+i*4,24*T,3,5,["#e07a5f","#f2c14e","#7fb069","#b5485d","#5b8ff0"][i%5]);
+  R(b,4*T,28*T,3*T,2*T,"#a66d47"); R(b,4*T+1,28*T+1,3*T-2,2*T-3,"#c48a5f");
+  R(b,5*T,28*T+5,8,4,"#f6efe0"); R(b,5*T+1,28*T+4,2,2,"#e07a5f"); R(b,5*T+4,28*T+4,2,2,"#f2c14e");
+  // lounge
+  R(b,14*T,24*T-6,4*T,12,"#2a2a2a"); R(b,14*T+2,24*T-4,4*T-4,8,"#3a4a5a");
+  R(b,14*T,27*T,4*T,T,"#8a5a3b"); R(b,14*T+3,27*T+2,4,3,"#ffffff"); R(b,14*T+20,27*T+2,3,3,"#f2c14e");
+  R(b,13*T,31*T,6*T,2*T,"#c2566a"); R(b,13*T,31*T,6*T,4,"#a8445a");
+  [2,18,34].forEach(o=>R(b,13*T+o,31*T+5,11,6,"#d9788a"));
+  R(b,20*T-1,24*T,T+2,T,"#f2c14e"); R(b,20*T+1,24*T+1,T-2,3,"#f7d57a");
+  // restroom
+  R(b,22*T+1,28*T-3,6,4,"#f4f6f8"); R(b,22*T,28*T+1,7,6,"#ffffff"); R(b,22*T+1,28*T+2,5,3,"#cfe4f1");   // toilet
+  R(b,22*T,31*T,8,6,"#ffffff"); R(b,22*T+2,31*T+2,4,2,"#9fc3d8"); R(b,22*T+3,31*T-1,2,2,"#9aa3ad");      // sink
+  R(b,22*T+1,30*T-1,6,5,"#cfe8f5"); R(b,22*T+2,30*T,1,3,"#ffffff");                                     // mirror
+  R(b,20*T+1,27*T+1,2,5,"#ffffff"); R(b,20*T+1,27*T+1,2,1,"#d9d9d9");                                    // towel
+  // work area props
+  R(b,1*T+1,12*T-4,6,12,"#dce8fb"); R(b,1*T+1,12*T-4,6,4,"#9fc3d8"); R(b,1*T+2,12*T+6,4,2,"#9aa3ad");
+  R(b,9*T,10*T+1,6,6,"#ffffff"); R(b,9*T+1,10*T+2,4,4,"#f6efe0");
+  [3*T, 13*T+2, 15*T+4].forEach(x=>hangingPlant(b, x, 10*T+2));
+  R(b,20*T,20*T,2*T,T,"#5b8ff0"); R(b,20*T,20*T,2*T,3,"#4a77c9");
+  PLANTS.forEach(p=>plant(b, p.t[0], p.t[1], p.k));
+  ROSTER.forEach((r,i)=>{ const [x,y]=r.desk, w=(r.booth?2:3)*T;
+    R(b,x*T,y*T+4,w,12,"#8a5a3b"); R(b,x*T,y*T+4,w,9,"#b37a50"); R(b,x*T+w-6,y*T+6,4,2,"#f6efe0");
+    R(b,x*T+2,y*T+8,6,3,"#f2c14e");
+    if (i%3===1 && !r.booth){ R(b,x*T+w-4,y*T+9,3,2,"#b0623e"); R(b,x*T+w-4,y*T+7,3,2,"#7fb8a0"); }      // desk succulents
+  });
+}
+
+// ---------- characters ----------
+const FRONT = ["..HHHHHH..",".HHHHHHHH.",".HSSSSSSH.",".HSESSESH.",".HSBSSBSH.","..SSSSSS..","...TTTT...","..TTTTTT..",".STTTTTTS.","..TTTTTT..","..PPPPPP.."];
+const BACK  = ["..HHHHHH..",".HHHHHHHH.",".HHHHHHHH.",".HHHHHHHH.","..HHHHHH..","...SSSS...","..TTTTTT..",".STTTTTTS.","..TTTTTT.."];
+function sprite(c, r, x, y, view, frame, eyesClosed){
+  const rows = view==="back" ? BACK : FRONT, ox = Math.round(x)-5, oy = Math.round(y)-(view==="back"?9:13);
+  const col = {H:r.hair,S:"#f2c9a0",E:eyesClosed?"#f2c9a0":"#2a1e16",B:"#f4a3a3",T:r.shirt,P:"#4a4e69"};
+  rows.forEach((row,j)=>{ for(let i=0;i<10;i++){ const k=row[i]; if(k==="."||!col[k]) continue;
+    let yy=oy+j; if(view==="back" && k==="S" && j===7 && frame%2) yy-=1; R(c,ox+i,yy,1,1,col[k]); } });
+  if (view!=="back"){
+    const step = frame%2; R(c,ox+2+(step?1:0),oy+11,2,2,"#4a4e69"); R(c,ox+6-(step?1:0),oy+11,2,2,"#4a4e69");
+    R(c,ox+2+(step?1:0),oy+13,2,1,"#2a1e16"); R(c,ox+6-(step?1:0),oy+13,2,1,"#2a1e16");
+    if (eyesClosed){ R(c,ox+2,oy+3,2,1,"#2a1e16"); R(c,ox+6,oy+3,2,1,"#2a1e16"); }
+  }
+  const P=(i,j,cc)=>R(c,ox+i,oy+j,1,1,cc);
+  switch(r.acc){
+    case "beret": for(let i=1;i<9;i++) P(i,0,"#c0392b"); for(let i=2;i<8;i++) P(i,-1,"#c0392b"); P(5,-2,"#c0392b"); break;
+    case "hat": for(let i=0;i<10;i++) P(i,1,"#f2b705"); for(let i=2;i<8;i++){P(i,0,"#f2c94c");P(i,-1,"#f2c94c");} break;
+    case "phones": for(let i=1;i<9;i++) P(i,-1,"#333"); [[0,1],[0,2],[0,3],[9,1],[9,2],[9,3]].forEach(([i,j])=>P(i,j,"#333")); break;
+    case "chick": [[4,-2],[5,-2],[3,-1],[4,-1],[5,-1],[6,-1],[4,-3]].forEach(([i,j])=>P(i,j,"#f7d24a")); P(6,-2,"#e8742c"); break;
+    case "pencil": if(view!=="back"){P(9,2,"#f2c14e");P(9,3,"#f2c14e");P(9,1,"#f4a3a3");} break;
+    case "glasses": if(view!=="back"){ for(let i=2;i<8;i++) P(i,3,"#2a1e16"); P(3,3,"#9fc3d8"); P(6,3,"#9fc3d8"); } break;
+    case "tie": if(view!=="back"){ [[4,7],[5,7],[4,8],[5,8]].forEach(([i,j])=>P(i,j,"#c0392b")); P(5,9,"#a02f23"); } break;
+    case "lens": if(view!=="back"){ P(10,6,"#6b4a2e"); [[11,5],[12,5],[11,3],[12,3],[13,4],[10,4]].forEach(([i,j])=>P(i,j,"#888")); P(11,4,"#bfe3f5"); P(12,4,"#bfe3f5"); } break;
+    case "clip": if(view!=="back"){ R(c,ox-3,oy+7,3,4,"#8a5a3b"); R(c,ox-2,oy+8,1,2,"#ffffff"); } break;
+  }
+}
+function catSprite(c, k, x, y, frame, sleeping){
+  const ox=Math.round(x)-5, oy=Math.round(y)-6, P=(i,j,cc)=>R(c,ox+i,oy+j,1,1,cc);
+  if (sleeping){
+    R(c,ox+1,oy+3,8,3,k.base); R(c,ox+6,oy+2,3,2,k.base); P(6,1,k.base); P(8,1,k.base);
+    [2,4,6].forEach(i=>P(i,3,k.stripe)); P(7,3,"#2a1e16"); R(c,ox-1,oy+5,3,1,k.base);
+    if (k.patch){ R(c,ox+3,oy+4,2,2,k.stripe); }
+    return;
+  }
+  R(c,ox,oy+2,7,4,k.base); R(c,ox+6,oy,4,4,k.base); P(6,-1,k.base); P(9,-1,k.base);
+  [1,3,5].forEach(i=>{ P(i,2,k.stripe); P(i,3,k.stripe); }); P(7,0,k.stripe); P(8,0,k.stripe);
+  if (k.patch){ R(c,ox+2,oy+4,2,2,k.stripe); P(9,2,k.stripe); }
+  P(7,1,k.eye); P(9,1,k.eye); P(8,2,"#f4a3a3");
+  const s=frame%2; R(c,ox+1+s,oy+6,1,1,k.base); R(c,ox+5-s,oy+6,1,1,k.base);
+  R(c,ox-2,oy+1+s,2,1,k.base); P(-1,2,k.base);
+}
+function bubble(c, x, y, kind, t, lift=24){
+  const ox=Math.round(x)-4, oy=Math.round(y)-lift;
+  R(c,ox,oy,9,7,"#ffffff"); R(c,ox+1,oy-1,7,1,"#ffffff"); R(c,ox+1,oy+7,7,1,"#ffffff"); R(c,ox+3,oy+8,2,1,"#ffffff");
+  const P=(i,j,cc)=>R(c,ox+i,oy+j,1,1,cc);
+  if (kind==="work"){ for(let i=0;i<3;i++) if(((t/300)|0)%4>i) P(2+i*2,3,"#3d7be0"); }
+  else if (kind==="done"){ [[2,3],[3,4],[4,5],[5,4],[6,3],[7,2]].forEach(([i,j])=>P(i,j,"#3f9a6b")); }
+  else if (kind==="zzz"){ [[2,1],[3,1],[4,1],[4,2],[3,3],[2,4],[2,5],[3,5],[4,5]].forEach(([i,j])=>P(i+1,j,"#8a7461")); }
+  else if (kind==="heart"){ [[3,1],[5,1],[2,2],[3,2],[4,2],[5,2],[6,2],[2,3],[3,3],[4,3],[5,3],[6,3],[3,4],[4,4],[5,4],[4,5]].forEach(([i,j])=>P(i,j,"#e0577a")); }
+  else if (kind==="coffee"){ R(c,ox+2,oy+2,4,4,"#6b4a2e"); P(6,3,"#6b4a2e"); P(3,1,"#cfc6b8"); P(4,0,"#cfc6b8"); }
+  else if (kind==="snack"){ R(c,ox+2,oy+2,5,4,"#d9a066"); P(3,3,"#6b4a2e"); P(5,4,"#6b4a2e"); }
+  else if (kind==="drop"){ P(4,1,"#3d7be0"); R(c,ox+3,oy+2,3,2,"#3d7be0"); R(c,ox+2,oy+4,5,2,"#3d7be0"); P(3,4,"#9fc3d8"); }
+}
+
+// ---------- movers (people and cats) ----------
+const rnd = a => a[(Math.random()*a.length)|0];
+const agents = ROSTER.map((r,i)=>{ const pool=r.booth?BOOTH_SPOTS:SPOTS, sp=pool[i%pool.length].t;
+  return {kind:"person", r, tx:sp[0], ty:sp[1], x:sp[0]*T+4, y:sp[1]*T+7, path:[], wait:1000+Math.random()*3000, act:"stand", spot:null, frame:0}; });
+const cats = CATS.map((k,i)=>{ const sp=CAT_SPOTS[i*3];
+  return {kind:"cat", r:k, tx:sp[0], ty:sp[1], x:sp[0]*T+4, y:sp[1]*T+7, path:[], wait:3000, act:"stand", frame:0}; });
+const taken = new Set();
+function goTo(a, tile, act){ a.path = bfs([a.tx,a.ty], tile); a.act = a.path.length ? "walk" : act; a.next = act; a.dest = tile; }
+function pickSpot(a){
+  if (a.kind==="cat"){ const t=rnd(CAT_SPOTS); goTo(a, t, Math.random()<.45 ? "sleep" : "sit"); return; }
+  if (a.spot) taken.delete(a.spot.t.join()); a.spot=null;
+  const pool = (a.r.booth?BOOTH_SPOTS:SPOTS).filter(s=>!taken.has(s.t.join())), s = rnd(pool); if(!s) return;
+  a.spot = s; taken.add(s.t.join()); goTo(a, s.t, s.a);
+}
+function syncStatus(a){
+  if (a.kind==="cat") return;
+  const st = data[a.r.id].status;
+  if (st==="working"){ const seat=seatOf(a.r); if(!(a.dest && a.dest[0]===seat[0] && a.dest[1]===seat[1])){ if(a.spot){taken.delete(a.spot.t.join()); a.spot=null;} goTo(a, seat, "work"); } }
+  else if (a.next==="work"){ a.next=null; a.wait=500; a.act="stand"; a.dest=null; }
+}
+function step(a, dt){
+  syncStatus(a);
+  if (a.path.length){
+    const [nx,ny]=a.path[0], X=nx*T+4, Y=ny*T+7, sp=(a.kind==="cat"?0.025:0.035)*dt, dx=X-a.x, dy=Y-a.y, d=Math.hypot(dx,dy);
+    a.dir = dy<-0.1 ? "up" : "down"; a.frame = ((performance.now()/180)|0);
+    if (d<=sp){ a.x=X; a.y=Y; a.tx=nx; a.ty=ny; a.path.shift();
+      if(!a.path.length){ a.act=a.next||"stand"; a.wait=(a.act==="toilet"||a.act==="wash"?3000:5000)+Math.random()*(a.kind==="cat"?14000:8000); } }
+    else { a.x+=dx/d*sp; a.y+=dy/d*sp; }
+    return;
+  }
+  if (a.act==="work") { a.frame=((performance.now()/220)|0); return; }
+  a.frame=0; a.wait-=dt; if (a.wait<=0) pickSpot(a);
+}
+
+// ---------- render ----------
+let selected = null;
+function drawMonitors(t){
+  ROSTER.forEach(r=>{ const a=agents.find(z=>z.r===r), [x,y]=r.desk, mx=x*T+(r.booth?3:6), my=y*T-2;
+    const on = a.act==="work" && data[r.id].status==="working";
+    R(g,mx,my,12,9,"#2a2a2a");
+    if (on){ R(g,mx+1,my+1,10,7, r.booth?"#123a24":"#1d3f7a");
+      if (r.booth){ for(let i=0;i<9;i++){ const h=2+((Math.sin(t/400+i)*2+2)|0); R(g,mx+1+i,my+8-h,1,1,"#5fe08a"); } }
+      else for(let i=0;i<3;i++){ const w=3+((t/150+i*3)%6|0); R(g,mx+2,my+2+i*2,w,1,"#cfe0ff"); } }
+    else { R(g,mx+1,my+1,10,7,"#3c4450"); if(((t/800)|0)%2) R(g,mx+9,my+6,1,1,"#7fd18b"); }
+    R(g,mx+5,my+9,2,2,"#2a2a2a"); });
+}
+const BUBBLE = {sleep:"zzz", tv:"heart", coffee:"coffee", snack:"snack", toilet:"drop", wash:"drop"};
+function render(t){
+  g.drawImage(bg,0,0);
+  if(((t/500)|0)%2) R(g,13*T+4,1*T-1,1,1,"#ff4d4d");
+  const watching = agents.some(a=>a.act==="tv" && !a.path.length);
+  R(g,14*T+2,24*T-4,4*T-4,8, watching ? ["#5b8ff0","#7fb069","#f2c14e"][((t/700)|0)%3] : "#3a4a5a");
+  const now=new Date(), ang=(now.getHours()%12+now.getMinutes()/60)/12*Math.PI*2; R(g,9*T+3+Math.round(Math.sin(ang)*1.5),10*T+4-Math.round(Math.cos(ang)*1.5),1,1,"#3a2a1e");
+  drawMonitors(t);
+  [...agents, ...cats].sort((a,b)=>a.y-b.y).forEach(a=>{
+    if (a===selected) R(g,Math.round(a.x)-5,Math.round(a.y)+1,10,2,"rgba(61,123,224,.6)");
+    if (a.kind==="cat"){
+      catSprite(g, a.r, a.x, a.y, a.path.length ? a.frame : ((t/700)|0), a.act==="sleep" && !a.path.length);
+      if (a.act==="sleep" && !a.path.length) bubble(g, a.x+2, a.y, "zzz", t, 15);
+      return;
+    }
+    const st=data[a.r.id].status, sitting=a.act==="work";
+    sprite(g, a.r, a.x, a.y, sitting||(a.dir==="up"&&a.path.length) ? "back" : "front", a.frame, a.act==="sleep");
+    if (!a.path.length){
+      const kind = sitting ? "work" : st==="done" ? "done" : BUBBLE[a.act];
+      if (kind) bubble(g, a.x, a.y+(sitting?4:0), kind, t);
+    }
+  });
+  const S = cv.width / W; out.imageSmoothingEnabled=false; out.drawImage(scene,0,0,cv.width,cv.height);
+  const label=(txt,x,y,fill="rgba(58,42,30,.82)")=>{ out.font=`${Math.max(10,Math.round(S*4.2))}px DotGothic16, "Noto Sans TC", sans-serif`;
+    const w=out.measureText(txt).width+S*2.4, h=S*5.4; out.fillStyle=fill; out.fillRect(x*S-w/2,y*S-h/2,w,h);
+    out.fillStyle="#fff"; out.textAlign="center"; out.textBaseline="middle"; out.fillText(txt,x*S,y*S+S*.3); };
+  label("會議室",24,74); label("茶水間",120,74); label("工作區",56,92); label("投資部",168,92,"rgba(61,123,224,.85)");
+  label("零食區",28,196); label("休息室",126,196); label("廁所",172,220);
+  agents.forEach(a=>label(a.r.name, a.x, a.y+(a.act==="work"?5:4.5), a===selected?"rgba(61,123,224,.92)":"rgba(58,42,30,.7)"));
+  cats.forEach(a=>label(a.r.name, a.x, a.y+4, a===selected?"rgba(61,123,224,.92)":"rgba(140,90,40,.75)"));
+}
+function fit(){ const w=Math.round(cv.clientWidth*(window.devicePixelRatio||1)); if (w>0){ cv.width=w; cv.height=Math.round(w*H/W); } }
+
+let last=performance.now();
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function loop(t){ const dt=Math.min(60,t-last); last=t; [...agents,...cats].forEach(a=>step(a, reduce?dt*0.5:dt)); render(t); requestAnimationFrame(loop); }
+
+// ---------- panel / roster / log ----------
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = iso => { try { const d=new Date(iso); return isNaN(d) ? "" : d.toLocaleString("zh-TW",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false}); } catch { return ""; } };
+const pc = document.getElementById("portrait").getContext("2d");
+function showPick(){
+  if (!selected) return; const r=selected.r;
+  document.getElementById("p-name").textContent = r.name;
+  document.getElementById("p-title").textContent = r.title;
+  document.getElementById("p-duty").textContent = "職責：" + r.duty;
+  pc.clearRect(0,0,16,16);
+  if (selected.kind==="cat"){
+    document.getElementById("p-role").textContent = "OFFICE CAT";
+    document.getElementById("p-task").innerHTML = `<span class="tag">${selected.act==="sleep" ? "睡覺中" : "巡邏中"}</span>`;
+    catSprite(pc, r, 7, 11, 0, false);
+  } else {
+    const s=data[r.id], st=LABEL[s.status]?s.status:"idle";
+    document.getElementById("p-role").textContent = r.id.toUpperCase();
+    document.getElementById("p-task").innerHTML = `<span class="tag ${st}">${LABEL[st]}</span> ${esc(s.task || (st==="idle" ? "沒有被分派工作，在辦公室裡晃晃。" : ""))}`
+      + (s.project ? `<div class="muted">📁 ${esc(s.project)}</div>` : "") + (s.updatedAt ? `<div class="muted">${esc(fmt(s.updatedAt))}</div>` : "");
+    sprite(pc, r, 8, 15, "front", 0, false);
+  }
+  document.querySelectorAll(".roster button").forEach(bt=>bt.setAttribute("aria-pressed", bt.dataset.id===r.id));
+}
+function renderLists(){
+  const counts={working:0,done:0,idle:0};
+  const people = ROSTER.map(r=>{ const s=data[r.id], st=LABEL[s.status]?s.status:"idle"; counts[st]++;
+    return `<button type="button" data-id="${r.id}" aria-pressed="false"><span class="e">${r.emoji}</span><span class="n">${esc(r.name)}<small>${esc(r.title)}</small></span><span class="s ${st}">${LABEL[st]}</span><span class="d">${esc(r.duty)}</span></button>`; });
+  const kitties = CATS.map(k=>`<button type="button" data-id="${k.id}" aria-pressed="false"><span class="e">🐈</span><span class="n">${esc(k.name)}<small>${esc(k.title)}</small></span><span class="s">在辦公室</span><span class="d">${esc(k.duty)}</span></button>`);
+  document.getElementById("roster").innerHTML = people.join("") + kitties.join("");
+  for (const k in counts) document.getElementById("n-"+k).textContent = counts[k];
+  document.querySelectorAll(".roster button").forEach(bt=>bt.onclick=()=>{ selected=[...agents,...cats].find(a=>a.r.id===bt.dataset.id); showPick(); });
+  showPick();
+}
+function renderLog(items){
+  const ol=document.getElementById("log");
+  if (!items||!items.length){ ol.innerHTML=`<li><time>—</time><p class="muted">總監分派工作後，紀錄會出現在這裡。</p></li>`; return; }
+  ol.innerHTML = items.slice().sort((a,b)=>String(b.t).localeCompare(String(a.t))).slice(0,30)
+    .map(i=>`<li><time>${esc(fmt(i.t))}</time><p>${esc(i.text)}</p></li>`).join("");
+}
+cv.addEventListener("click", e=>{ const rect=cv.getBoundingClientRect(), x=(e.clientX-rect.left)/rect.width*W, y=(e.clientY-rect.top)/rect.height*H;
+  let best=null, bd=14; [...agents,...cats].forEach(a=>{ const d=Math.hypot(a.x-x, a.y-(a.kind==="cat"?3:6)-y); if(d<bd){bd=d;best=a;} });
+  if (best){ selected=best; showPick(); } });
+
+drawBackground(); fit(); addEventListener("resize", fit); renderLists(); requestAnimationFrame(loop);
+
+// ---------- live data: Claude artifact db when available, otherwise status.json (GitHub Pages) ----------
+(async () => {
+  const live=document.getElementById("live");
+  let db=null; try { db = window.claude?.use ? await window.claude.use("db") : null; } catch { db=null; }
+  if (db){
+    db.collection("agents").onSnapshot(snap=>{
+      for (const d of snap.docs) if (data[d.id]) data[d.id] = {...d.data()};
+      live.textContent = "● 即時連線　" + fmt(new Date().toISOString()); renderLists();
+    }, ()=>{ live.textContent="連線中斷，重新整理頁面即可"; });
+    db.doc("office/log").onSnapshot(s=>renderLog(s.exists ? s.data().items : []), ()=>{});
+    return;
+  }
+  async function pull(){
+    try {
+      const res = await fetch("status.json?t=" + Date.now(), {cache:"no-store"});
+      if (!res.ok) throw new Error(res.status);
+      const s = await res.json();
+      for (const id in s.agents || {}) if (data[id]) data[id] = s.agents[id];
+      renderLists(); renderLog(s.log || []);
+      live.textContent = "● 更新於 " + (fmt(s.updatedAt) || "—");
+    } catch { live.textContent = "讀不到狀態，稍後自動重試"; }
+  }
+  pull(); setInterval(pull, 60000);
+})();
+</script>
+
+</body>
+</html>

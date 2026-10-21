@@ -1,0 +1,23 @@
+{
+  "updatedAt": "2026-10-21T15:10:00+08:00",
+  "agents": {
+    "project-manager": {"status": "idle", "task": "等個展日期確定後倒推時程", "updatedAt": "2026-10-21T10:28:39+08:00"},
+    "researcher": {"status": "working", "task": "查舊輸送帶與廢棄船的購買管道、價格與手續", "project": "高雄二五淑女", "updatedAt": "2026-10-21T15:00:00+08:00"},
+    "proposal-writer": {"status": "idle", "task": ""},
+    "exhibition-designer": {"status": "done", "task": "完成 15,000 版預算：總額 14,960", "project": "高雄二五淑女", "updatedAt": "2026-10-21T11:05:00+08:00"},
+    "film-director": {"status": "done", "task": "完成影像製作計畫：影像擺放位置＋第一週 5 個鏡頭", "project": "高雄二五淑女", "updatedAt": "2026-10-21T15:05:00+08:00"},
+    "td-engineer": {"status": "idle", "task": ""},
+    "jury-reviewer": {"status": "idle", "task": ""},
+    "social-strategist": {"status": "idle", "task": ""},
+    "stock-analyst": {"status": "idle", "task": "每個交易日 8:45 寫盤前日報"}
+  },
+  "log": [
+    {"t": "2026-10-21T10:16:18+08:00", "text": "🎬 小導 完成腳本 v3"},
+    {"t": "2026-10-21T10:24:38+08:00", "text": "🎬 小導 完成實拍清單 v1（30 項）"},
+    {"t": "2026-10-21T10:55:00+08:00", "text": "🔍 查查 完成工廠類型查證"},
+    {"t": "2026-10-21T11:05:00+08:00", "text": "🏗️ 築築 完成 15,000 版預算（總額 14,960）"},
+    {"t": "2026-10-21T11:20:00+08:00", "text": "📈 小K 開始每天盤前日報"},
+    {"t": "2026-10-21T15:05:00+08:00", "text": "🎬 小導 完成影像製作計畫（07_production_v1）"},
+    {"t": "2026-10-21T15:10:00+08:00", "text": "🐈 新同事：柚柚（橘貓）、蔥蔥（黑白虎斑）；新增廁所"}
+  ]
+}
