@@ -75,7 +75,7 @@ h1 .en{display:block;font:400 9px var(--f-latin);color:var(--muted);margin-top:6
     <div class="live" id="live">連線中…</div>
   </header>
 
-  <div class="screen"><canvas id="office" width="192" height="272" aria-label="像素風辦公室，九位小幫手和兩隻貓在裡面工作或休息"></canvas></div>
+  <div class="screen"><canvas id="office" width="192" height="272" aria-label="像素風辦公室，七位小幫手和兩隻貓在裡面工作或休息"></canvas></div>
   <p class="hint">點一下人物或貓咪看他在做什麼。工作中的人會坐在位子上打字；沒事的人會去茶水間、零食區、休息室或廁所。</p>
 
   <div class="pills">
@@ -105,8 +105,6 @@ const ROSTER = [
   {id:"film-director",       name:"小導", title:"影像導演",   duty:"敘事結構、分鏡、AI 生成 prompt、後製規劃",  emoji:"🎬", hair:"#222222", shirt:"#3d405b", acc:"beret",   desk:[2,18]},
   {id:"td-engineer",         name:"節節", title:"TD 工程師",  duty:"TouchDesigner 架構、Python、除錯與設備串接", emoji:"🔌", hair:"#6b3e26", shirt:"#81b29a", acc:"phones",  desk:[6,18]},
   {id:"jury-reviewer",       name:"老嚴", title:"評審委員",   duty:"用徵件評審標準獨立審查提案，找出弱點",     emoji:"🧐", hair:"#a3a3a3", shirt:"#6d597a", acc:"glasses", desk:[10,18]},
-  {id:"social-strategist",   name:"啾啾", title:"社群策略師", duty:"規劃個人社群、寫貼文草稿、回顧成效",       emoji:"🐣", hair:"#b5485d", shirt:"#f4a6b7", acc:"chick",   desk:[14,18]},
-  {id:"stock-analyst",       name:"小K",  title:"投資分析師", duty:"盤前日報、個股研究、投資日誌（隔離部門）", emoji:"📈", hair:"#2e2e2e", shirt:"#f4f1ea", acc:"tie",     desk:[20,13], booth:true},
 ];
 const CATS = [
   {id:"cat-yuyu",     name:"柚柚", title:"辦公室貓咪", duty:"橘貓。負責在休息室地毯上曬太陽、陪大家發呆。", base:"#f0a24a", stripe:"#d98a35", eye:"#3a6b2a"},
@@ -373,7 +371,7 @@ function render(t){
   const label=(txt,x,y,fill="rgba(58,42,30,.82)")=>{ out.font=`${Math.max(10,Math.round(S*4.2))}px DotGothic16, "Noto Sans TC", sans-serif`;
     const w=out.measureText(txt).width+S*2.4, h=S*5.4; out.fillStyle=fill; out.fillRect(x*S-w/2,y*S-h/2,w,h);
     out.fillStyle="#fff"; out.textAlign="center"; out.textBaseline="middle"; out.fillText(txt,x*S,y*S+S*.3); };
-  label("會議室",24,74); label("茶水間",120,74); label("工作區",56,92); label("投資部",168,92,"rgba(61,123,224,.85)");
+  label("會議室",24,74); label("茶水間",120,74); label("工作區",56,92); label("閱讀角",168,92,"rgba(61,123,224,.85)");
   label("零食區",28,196); label("休息室",126,196); label("廁所",172,220);
   agents.forEach(a=>label(a.r.name, a.x, a.y+(a.act==="work"?5:4.5), a===selected?"rgba(61,123,224,.92)":"rgba(58,42,30,.7)"));
   cats.forEach(a=>label(a.r.name, a.x, a.y+4, a===selected?"rgba(61,123,224,.92)":"rgba(140,90,40,.75)"));
